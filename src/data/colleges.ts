@@ -323,8 +323,8 @@ export const colleges: College[] = [
     description: 'Christ University is renowned for holistic education combining academics with values and ethics.',
     website: 'https://christuniversity.in',
     accreditation: ['NAAC A++', 'UGC', 'AICTE']
-  }
-   {
+  },
+  {
     id: 'sjrc',
     name: 'Sree Jagdguru Renukacharya College Of Arts,Comerce and Science',
     shortName: 'SJRC',
