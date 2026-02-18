@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, SlidersHorizontal, Star, MapPin, X } from 'lucide-react';
+import { Search, SlidersHorizontal, Star, MapPin, X, Heart } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Input } from '@/components/ui/input';
@@ -13,15 +13,34 @@ import collegesData from '@/data/colleges';
 
 type SortOption = 'rating' | 'placement' | 'fees-low' | 'fees-high' | 'ranking';
 
+// SAVE COLLEGE API
+const saveCollege = async (collegeId: string) => {
+  const userId = localStorage.getItem("userId");
+  if (!userId) {
+    alert("Please login first");
+    return;
+  }
+
+  try {
+    await fetch("http://localhost:5000/api/profile/save", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId, collegeId }),
+    });
+    alert("College Saved!");
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 const Colleges = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('rating');
   const [collegeType, setCollegeType] = useState<string>('all');
   const [courseFilter, setCourseFilter] = useState<string>('all');
-
-  // 🔴 IMPORTANT FIX — increase default
   const [maxFees, setMaxFees] = useState<number>(1000000);
-
   const [minPlacementRate, setMinPlacementRate] = useState<number>(0);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -37,7 +56,6 @@ const Colleges = () => {
   const filteredAndSortedColleges = useMemo(() => {
     let result = [...colleges];
 
-    // SEARCH
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter(college =>
@@ -50,12 +68,10 @@ const Colleges = () => {
       );
     }
 
-    // TYPE
     if (collegeType !== 'all') {
       result = result.filter(college => college.type === collegeType);
     }
 
-    // COURSE
     if (courseFilter !== 'all') {
       result = result.filter(college =>
         (college.courses ?? []).some((c: any) =>
@@ -64,26 +80,22 @@ const Colleges = () => {
       );
     }
 
-    // FEES
     result = result.filter(college => {
       const fees = (college.courses ?? []).map((c: any) => c.fees);
       const minFee = fees.length ? Math.min(...fees) : 0;
       return minFee <= maxFees;
     });
 
-    // PLACEMENT
     if (minPlacementRate > 0) {
       result = result.filter(
         college => (college.placement?.placementRate ?? 0) >= minPlacementRate
       );
     }
 
-    // SORT
     switch (sortBy) {
       case 'rating':
         result.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
         break;
-
       case 'placement':
         result.sort(
           (a, b) =>
@@ -91,11 +103,9 @@ const Colleges = () => {
             (a.placement?.averagePackage ?? 0)
         );
         break;
-
       case 'ranking':
         result.sort((a, b) => (a.ranking ?? 9999) - (b.ranking ?? 9999));
         break;
-
       case 'fees-low':
         result.sort(
           (a, b) =>
@@ -103,7 +113,6 @@ const Colleges = () => {
             Math.min(...(b.courses ?? []).map((c: any) => c.fees))
         );
         break;
-
       case 'fees-high':
         result.sort(
           (a, b) =>
@@ -115,15 +124,6 @@ const Colleges = () => {
 
     return result;
   }, [searchQuery, sortBy, collegeType, courseFilter, maxFees, minPlacementRate, colleges]);
-
-  const clearFilters = () => {
-    setSearchQuery('');
-    setSortBy('rating');
-    setCollegeType('all');
-    setCourseFilter('all');
-    setMaxFees(1000000);
-    setMinPlacementRate(0);
-  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -153,37 +153,50 @@ function CollegeCard({ college }: { college: any }) {
   const minFees = feesArr.length ? Math.min(...feesArr) : 0;
 
   return (
-    <Link
-      to={`/colleges/${college.id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border hover:shadow-lg"
-    >
-      <div className="h-40 flex items-center justify-center bg-slate-100">
-        <img
-          src={college.imageUrl || "/placeholder.svg"}
-          className="max-h-full object-contain p-4"
-        />
-      </div>
+    <div className="relative">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          saveCollege(college.id);
+        }}
+        className="absolute right-3 top-3 z-10 rounded-full bg-white p-2 shadow hover:scale-110"
+      >
+        <Heart className="h-5 w-5 text-red-500" />
+      </button>
 
-      <div className="p-5 flex flex-col flex-1">
-        <h3 className="font-semibold">{college.name}</h3>
-
-        <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2">
-          <MapPin className="h-4 w-4" />
-          {college.city}
+      <Link
+        to={`/colleges/${college.id}`}
+        className="group flex flex-col overflow-hidden rounded-2xl border hover:shadow-lg"
+      >
+        <div className="h-40 flex items-center justify-center bg-slate-100">
+          <img
+            src={college.imageUrl || "/placeholder.svg"}
+            className="max-h-full object-contain p-4"
+          />
         </div>
 
-        <div className="mt-auto pt-4 border-t flex justify-between text-sm">
-          <div className="flex items-center gap-1">
-            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            {college.rating ?? 0}
+        <div className="p-5 flex flex-col flex-1">
+          <h3 className="font-semibold">{college.name}</h3>
+
+          <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            {college.city}
           </div>
 
-          <div>₹{college.placement?.averagePackage ?? 0}L avg</div>
+          <div className="mt-auto pt-4 border-t flex justify-between text-sm">
+            <div className="flex items-center gap-1">
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              {college.rating ?? 0}
+            </div>
 
-          <div>From ₹{(minFees / 100000).toFixed(1)}L</div>
+            <div>₹{college.placement?.averagePackage ?? 0}L avg</div>
+
+            <div>From ₹{(minFees / 100000).toFixed(1)}L</div>
+          </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
 

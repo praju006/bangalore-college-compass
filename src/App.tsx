@@ -1,11 +1,13 @@
 import { Routes, Route } from "react-router-dom";
+
 import Index from "./pages/Index";
 import Colleges from "./pages/Colleges";
 import CollegeDetail from "./pages/CollegeDetail";
 import Recommend from "./pages/Recommend";
 import NotFound from "./pages/NotFound";
-import Login from "./pages/login";
+import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Profile from "./pages/Profile";
 
 export default function App() {
   return (
@@ -13,9 +15,10 @@ export default function App() {
       <Route path="/" element={<Index />} />
       <Route path="/colleges" element={<Colleges />} />
       <Route path="/colleges/:id" element={<CollegeDetail />} />
+
+      <Route path="/profile" element={<Profile />} />
       <Route path="/recommend" element={<Recommend />} />
 
-      {/* ADD THESE TWO */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 

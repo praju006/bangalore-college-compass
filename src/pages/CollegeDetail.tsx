@@ -47,7 +47,6 @@ export default function CollegeDetail() {
               <ArrowLeft className="h-4 w-4" />
               Back to Colleges
             </Link>
-            
 
             {/* BADGES */}
             <div className="flex flex-wrap gap-2">

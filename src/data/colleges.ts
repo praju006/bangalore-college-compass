@@ -369,35 +369,7 @@ const colleges: College[] = [
   applicationLink: 'https://sjrc.edu.in/admissions',
   approvedBy: ['NAAC', 'UGC']
 },
-  {
-    id: 'sjrc',
-    name: 'Sree Jagdguru Renukacharya College Of Arts,Comerce and Science',
-    shortName: 'SJRC',
-    type: 'Government',
-    affiliation: 'Bengaluru City University',
-    city: 'Anand Rao Circle, Bangalore',
-    established: 1945,
-    rating: 3.5,
-    ranking: 208,
-    courses: [
-      { id: 'bca', name: 'B.Computer Application', duration: '4 years', fees: 50000, cutoffMarks: 95, seats: 120 },
-      { id: 'bcom', name: 'B.Commerce', duration: '4 years', fees: 50000, cutoffMarks: 93, seats: 100 },
-      { id: 'bba', name: 'B.Business Administration', duration: '2 years', fees: 35000, cutoffMarks: 85, seats: 60, specializations: ['Machine Learning', 'Deep Learning', 'NLP'] },
-      { id: 'bsc', name: 'B.Science', duration: '2 years', fees: 35000, cutoffMarks: 82, seats: 50 },
-    ],
-    placement: {
-      averagePackage: 10,
-      highestPackage: 15,
-      placementRate: 98,
-      topRecruiters: ['Goldman Sachs', 'Adobe', 'Intel']
-    },
-    facilities: ['Research Labs', 'Library', 'Sports Complex', 'Hostels', 'Cafeteria', 'Innovation Hub'],
-    imageUrl: '/collegesimg/sjrc.jpg',
-    description: 'SJRC College is a well-known pre-university institution in Bengaluru recognized for its strong academic results, disciplined environment, and focus on overall student development',
-    website: 'sjrc.edu.in',
-    applicationLink: 'https://sjrc.edu.in/admn2025-26/',
-    approvedBy: ['NAAC A++', 'NBA', 'UGC']
-  },
+
   {
   id: 'bit',
   name: 'Bangalore Institute of Technology',

@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
-
+import profileRoutes from "./routes/profileRoutes.js";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -12,6 +12,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/profile", profileRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI)
