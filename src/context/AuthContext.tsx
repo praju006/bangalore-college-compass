@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 type UserType = {
+  _id?: string;
   email: string;
   name?: string;
 };
@@ -24,12 +25,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = (userData: UserType, token: string) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("userId", userData._id ?? ""); // ✅ save userId
     setUser(userData);
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("userId"); // ✅ clear userId on logout
     setUser(null);
   };
 
