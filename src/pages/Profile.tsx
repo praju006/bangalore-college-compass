@@ -25,7 +25,6 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState("saved");
   const [loading, setLoading] = useState(true);
 
-  // Preferences editing
   const [editingPrefs, setEditingPrefs] = useState(false);
   const [prefCity, setPrefCity] = useState('');
   const [prefCourse, setPrefCourse] = useState('');
@@ -34,16 +33,25 @@ export default function Profile() {
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
   const [savingPrefs, setSavingPrefs] = useState(false);
 
+  // ✅ Safely parse user from localStorage
   const userStr = localStorage.getItem("user");
-  const userId = userStr ? JSON.parse(userStr).id : null;
+  const parsedLocal = userStr ? JSON.parse(userStr) : null;
+  const userId = parsedLocal?.id ?? parsedLocal?._id ?? null;
   const token = localStorage.getItem("token");
 
   const fetchProfile = useCallback(async () => {
-    if (!userId || !token) return;
+    // ✅ If no userId, show basic info from localStorage (no infinite loading)
+    if (!userId || !token) {
+      if (parsedLocal) setUser(parsedLocal);
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch(`http://localhost:5000/api/profile/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!res.ok) throw new Error("Profile fetch failed");
       const data = await res.json();
       setUser(data);
       setPrefCity(data.preferredCity || '');
@@ -51,6 +59,8 @@ export default function Profile() {
       setPrefBudget(data.budgetRange ? String(data.budgetRange) : '');
     } catch (err) {
       console.error("Failed to load profile:", err);
+      // Fallback to localStorage data so page doesn't break
+      if (parsedLocal) setUser(parsedLocal);
     } finally {
       setLoading(false);
     }
@@ -73,6 +83,7 @@ export default function Profile() {
   }, [userId]);
 
   const savePreferences = async () => {
+    if (!userId) return;
     setSavingPrefs(true);
     try {
       await fetch(`http://localhost:5000/api/profile/preferences`, {
@@ -98,6 +109,7 @@ export default function Profile() {
   };
 
   const removeCollege = async (collegeName: string) => {
+    if (!userId) return;
     try {
       await fetch("http://localhost:5000/api/profile/remove", {
         method: "POST",
@@ -162,16 +174,18 @@ export default function Profile() {
                 <h1 className="text-xl font-bold text-gray-900">{user.name}</h1>
                 <p className="text-sm text-gray-500">{user.email}</p>
               </div>
-              <button
-                onClick={() => setEditingPrefs(!editingPrefs)}
-                className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 border border-blue-200 rounded-full px-3 py-1.5 transition-colors"
-              >
-                <Pencil className="w-3 h-3" />
-                Edit Preferences
-              </button>
+              {/* Only show Edit Preferences if user has a real DB id */}
+              {userId && (
+                <button
+                  onClick={() => setEditingPrefs(!editingPrefs)}
+                  className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 border border-blue-200 rounded-full px-3 py-1.5 transition-colors"
+                >
+                  <Pencil className="w-3 h-3" />
+                  Edit Preferences
+                </button>
+              )}
             </div>
 
-            {/* Preferences display / edit */}
             {!editingPrefs ? (
               <div className="flex flex-wrap gap-3 mt-2">
                 <span className="flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-medium px-3 py-1.5 rounded-full">
@@ -187,7 +201,6 @@ export default function Profile() {
               </div>
             ) : (
               <div className="mt-3 grid gap-3 sm:grid-cols-3 border-t pt-4">
-                {/* City picker */}
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1 block">Preferred City</label>
                   <div className="relative">
@@ -232,7 +245,6 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Course */}
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1 block">Preferred Course</label>
                   <input
@@ -244,7 +256,6 @@ export default function Profile() {
                   />
                 </div>
 
-                {/* Budget */}
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1 block">Budget (₹)</label>
                   <input
@@ -338,7 +349,7 @@ export default function Profile() {
               {!recommended.length ? (
                 <div className="bg-white rounded-2xl border p-10 text-center text-gray-400">
                   <Star className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                  <p>Set your preferred city and budget in your profile to get recommendations!</p>
+                  <p>Set your preferred city and budget to get recommendations!</p>
                 </div>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2">
