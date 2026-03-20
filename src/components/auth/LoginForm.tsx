@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { loginUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { GoogleLogin } from "@react-oauth/google";
+
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export function LoginForm({
   switchToRegister,
@@ -13,20 +16,18 @@ export function LoginForm({
   onClose: () => void;
 }) {
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [error, setError]       = useState("");
+  const [loading, setLoading]   = useState(false);
 
-  // ─── Normal Login ──────────────────────────────────────────────────────────
+  // ─── Normal Login ──────────────────────────────────────────────
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
       const data = await loginUser({ email, password });
-
       if (data?.token && data?.user) {
         login(data.user, data.token);
         onClose();
@@ -40,17 +41,15 @@ export function LoginForm({
     }
   };
 
-  // ─── Google Login ──────────────────────────────────────────────────────────
+  // ─── Google Login ──────────────────────────────────────────────
   const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
       const credential = credentialResponse.credential;
       if (!credential) return;
 
-      // Decode Google JWT to extract name + email
       const payload = JSON.parse(atob(credential.split(".")[1]));
 
-      // ✅ Send to backend — finds existing user or creates new one
-      const res = await fetch("http://localhost:5000/api/auth/google", {
+      const res = await fetch(`${API}/api/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: payload.name, email: payload.email }),
@@ -82,13 +81,26 @@ export function LoginForm({
         onChange={(e) => setEmail(e.target.value)}
         required
       />
-      <Input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
+
+      <div className="space-y-1">
+        <Input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        {/* ── Forgot password link ── */}
+        <div className="text-right">
+          <Link
+            to="/forgot-password"
+            className="text-xs text-[#565699] hover:underline font-medium"
+            onClick={onClose}
+          >
+            Forgot password?
+          </Link>
+        </div>
+      </div>
 
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Logging in..." : "Login"}
